@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const pool = mysql.createPool({
-  host: 'localhost:3565',
+  host: 'localhost',
   user: 'root',
   password: 'tweetybird',
   database: 'employee_db',

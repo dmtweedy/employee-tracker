@@ -1,4 +1,4 @@
-CREATE TABLE department (
+CREATE TABLE IF NOT EXISTS department (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(30)
 );
