@@ -147,7 +147,7 @@ async function addRole() {
   ]);
 
   try {
-    await roleQueries.addRole(roleData.title, roleData.salary, roleData.departmentId);
+    await roleQueries.addRole(roleData.title, roleData.departmentId, roleData.salary);
     console.log('Job title added successfully.');
   } catch (error) {
     console.error('Error adding job title:', error.message);
