@@ -33,7 +33,7 @@ async function addRole(title, departmentId, salary) {
 
 async function removeRole(roleId) {
   try {
-    const query = 'DELETE FROM role WHERE id = ?';
+    const query = 'DELETE FROM role WHERE role_id = ?';
     await pool.query(query, [roleId]);
   } catch (error) {
     throw error;

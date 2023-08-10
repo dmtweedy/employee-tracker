@@ -286,31 +286,41 @@ async function removeRoleMenu() {
 }
 
 async function removeEmployeeMenu() {
+  const employees = await employeeQueries.getAllEmployees();
+
+  const employeeChoices = employees.map((employee) => ({
+    name: `${employee.name} - ${employee.employee_id}`,
+    value: employee.employee_id,
+  }));
+
+  if (employeeChoices.length === 0) {
+    console.log('No employees available to remove.');
+    await promptGoBack();
+    return;
+  }
+
+  const { employeeId } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'employeeId',
+      message: 'Select the employee you want to remove:',
+      choices: employeeChoices,
+    },
+  ]);
+
   try {
-    const employees = await employeeQueries.getAllEmployees();
-    const employeeChoices = employees.map(employee => ({
-      name: `${employee.name} - ${employee.employee_id}`,
-      value: employee.employee_id
-    }));
-
-    const selectedEmployee = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'employeeId',
-        message: 'Select an employee to remove:',
-        choices: employeeChoices
-      }
-    ]);
-
-    const isEmployeeDeleted = await employeeQueries.removeEmployee(selectedEmployee.employeeId);
-    if (isEmployeeDeleted) {
-      console.log('Employee deleted successfully.');
+    const employee = employees.find((emp) => emp.employee_id === employeeId);
+    const removed = await employeeQueries.removeEmployee(employeeId);
+    if (removed) {
+      console.log(`Employee ${employee.name} removed successfully.`);
     } else {
-      console.log('Employee not found or could not be deleted.');
+      console.log('Employee removal failed.');
     }
   } catch (error) {
-    console.error('Error removing employee:', error);
+    console.error('Error removing employee:', error.message);
   }
+
+  await promptGoBack();
 }
 
 async function updateEmployeeManager() {
