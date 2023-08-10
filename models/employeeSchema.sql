@@ -1,12 +1,12 @@
-CREATE TABLE IF NOT EXISTS employee (
+CREATE TABLE employee (
   employee_id INT AUTO_INCREMENT PRIMARY KEY,
   first_name VARCHAR(30),
   last_name VARCHAR(30),
-  title INT,
-  department INT,
+  department_id INT,
+  role_id INT,
+  manager_id INT,
   salary DECIMAL(10, 2),
-  reporting_manager INT,
-  FOREIGN KEY (title) REFERENCES (role_id),
-  FOREIGN KEY (department) REFERENCES department(id),
-  FOREIGN KEY (reporting_manager) REFERENCES employee(employee_id)
+  FOREIGN KEY (department_id) REFERENCES department(department_id),
+  FOREIGN KEY (role_id) REFERENCES role(role_id),
+  FOREIGN KEY (manager_id) REFERENCES employee(employee_id)
 );

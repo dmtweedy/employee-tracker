@@ -3,14 +3,15 @@ const pool = require('../db/db.js');
 async function getAllRoles() {
   try {
     const query = `
-      SELECT 
+      SELECT
         r.id,
-        r.title,
-        r.salary,
-        d.name AS department
+        r.title,  -- Use "title" instead of "job_title"
+        d.id AS department_id,
+        r.salary
       FROM role AS r
-      INNER JOIN department AS d ON r.department_id = d.id
+      INNER JOIN department AS d ON r.department_id = d.id;
     `;
+
     const [rows, fields] = await pool.query(query);
     return rows;
   } catch (error) {
@@ -18,13 +19,13 @@ async function getAllRoles() {
   }
 }
 
-async function addRole(title, salary, departmentId) {
+async function addRole(jobTitle, departmentId, salary) {
   try {
     const query = `
-      INSERT INTO role (title, salary, department)
+      INSERT INTO role (job_title, department_id, salary)
       VALUES (?, ?, ?)
     `;
-    await pool.query(query, [title, salary, departmentId]);
+    await pool.query(query, [jobTitle, departmentId, salary]);
   } catch (error) {
     throw error;
   }
@@ -33,8 +34,7 @@ async function addRole(title, salary, departmentId) {
 async function removeRole(roleId) {
   try {
     const query = 'DELETE FROM role WHERE id = ?';
-    const [result] = await pool.query(query, [roleId]);
-    return result;
+    await pool.query(query, [roleId]);
   } catch (error) {
     throw error;
   }

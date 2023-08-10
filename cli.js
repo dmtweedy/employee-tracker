@@ -21,6 +21,7 @@ async function mainMenu() {
           'Remove a department',
           'Remove a job title',
           'Remove an employee',
+          'Update employee manager',
           'Exit'
         ]
       }
@@ -57,6 +58,9 @@ async function mainMenu() {
       case 'Remove an employee':
         await removeEmployeeMenu();
         break;
+      case 'Update employee manager':
+        await updateEmployeeManager();
+        break;
       case 'Exit':
         console.log('Exiting...');
         process.exit(0);
@@ -65,7 +69,6 @@ async function mainMenu() {
     console.error('Error:', error);
   }
 }
-
 
 async function viewAllDepartments() {
   try {
@@ -122,23 +125,23 @@ async function addRole() {
   const roleDetails = await inquirer.prompt([
     {
       type: 'input',
-      name: 'title',
+      name: 'jobTitle',
       message: 'Enter the job title:'
+    },
+    {
+      type: 'input',
+      name: 'departmentId',
+      message: 'Enter the department ID for the job title:'
     },
     {
       type: 'input',
       name: 'salary',
       message: 'Enter the salary for the job title:'
-    },
-    {
-      type: 'input',
-      name: 'departmentId',
-      message: 'Enter the department for the job title:'
     }
   ]);
 
   try {
-    await roleQueries.addRole(roleDetails.title, roleDetails.salary, roleDetails.departmentId);
+    await roleQueries.addRole(roleDetails.jobTitle, roleDetails.departmentId, roleDetails.salary);
     console.log('Job title added successfully.');
   } catch (error) {
     console.error('Error adding job title:', error);
@@ -161,17 +164,17 @@ async function addEmployee() {
     {
       type: 'input',
       name: 'roleId',
-      message: "Enter the employee's job title:"
+      message: "Enter the employee's job title (role id):"
+    },
+    {
+      type: 'input',
+      name: 'departmentId',
+      message: "Enter the employee's department (department id):"
     },
     {
       type: 'input',
       name: 'managerId',
-      message: "Enter the employee's reporting manager (or leave empty if none):"
-    },
-    {
-      type: 'input',
-      name: 'department',
-      message: "Enter the employee's department:"
+      message: "Enter the employee's reporting manager (manager id or leave empty if none):"
     },
     {
       type: 'input',
@@ -181,7 +184,13 @@ async function addEmployee() {
   ]);
 
   try {
-    await employeeQueries.addEmployee(employeeDetails.firstName, employeeDetails.lastName, employeeDetails.roleId, employeeDetails.managerId);
+    await employeeQueries.addEmployee(
+      employeeDetails.firstName,
+      employeeDetails.lastName,
+      employeeDetails.roleId,
+      employeeDetails.managerId,
+      employeeDetails.salary
+    );
     console.log('Employee added successfully.');
   } catch (error) {
     console.error('Error adding employee:', error);
@@ -267,26 +276,70 @@ async function removeRoleMenu() {
 async function removeEmployeeMenu() {
   try {
     const employees = await employeeQueries.getAllEmployees();
-    const employeeChoices = employees.map(employee => ({
-      name: `${employee.first_name} ${employee.last_name}`,
-      value: employee.id
-    }));
-
-    const { employeeId } = await inquirer.prompt([
+    
+    const employeeNames = employees.map(employee => `${employee.first_name} ${employee.last_name}`);
+    
+    const { employeeName } = await inquirer.prompt([
       {
         type: 'list',
-        name: 'employeeId',
-        message: 'Select the employee you want to remove:',
-        choices: employeeChoices
+        name: 'employeeName',
+        message: 'Select an employee to remove:',
+        choices: employeeNames
       }
     ]);
-
-    await employeeQueries.removeEmployee(employeeId);
-    console.log('Employee removed successfully.');
+    
+    const [firstName, lastName] = employeeName.split(' ');
+    
+    const removed = await employeeQueries.removeEmployee(firstName, lastName);
+    
+    if (removed) {
+      console.log(`Employee ${employeeName} has been removed.`);
+    } else {
+      console.log(`No employee found with the name ${employeeName}.`);
+    }
 
     await promptGoBack();
   } catch (error) {
     console.error('Error removing employee:', error);
+    await promptGoBack();
+  }
+}
+
+async function updateEmployeeManager() {
+  try {
+    const employees = await employeeQueries.getAllEmployees();
+    const employeeNames = employees.map(employee => `${employee.first_name} ${employee.last_name}`);
+
+    const { employeeName, newManagerName } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'employeeName',
+        message: 'Select an employee to update the manager:',
+        choices: employeeNames
+      },
+      {
+        type: 'list',
+        name: 'newManagerName',
+        message: 'Select a new manager:',
+        choices: [...employeeNames, 'None (No Manager)']
+      }
+    ]);
+
+    const employee = employees.find(employee => `${employee.first_name} ${employee.last_name}` === employeeName);
+    const newManager = newManagerName !== 'None (No Manager)'
+      ? employees.find(employee => `${employee.first_name} ${employee.last_name}` === newManagerName)
+      : null;
+
+    if (!employee) {
+      console.log('Employee not found.');
+      return;
+    }
+
+    const newManagerId = newManager ? newManager.employee_id : null;
+    await employeeQueries.updateEmployeeManager(employee.employee_id, newManagerId);
+    console.log('Employee manager updated successfully.');
+  } catch (error) {
+    console.error('Error updating employee manager:', error);
   }
 }
 
