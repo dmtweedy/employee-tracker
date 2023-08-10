@@ -4,12 +4,12 @@ async function getAllRoles() {
   try {
     const query = `
       SELECT
-        r.id,
-        r.title,  -- Use "title" instead of "job_title"
-        d.id AS department_id,
+        r.role_id,
+        r.title,
+        d.department_id,
         r.salary
       FROM role AS r
-      INNER JOIN department AS d ON r.department_id = d.id;
+      INNER JOIN department AS d ON r.department_id = d.department_id;
     `;
 
     const [rows, fields] = await pool.query(query);
@@ -19,13 +19,13 @@ async function getAllRoles() {
   }
 }
 
-async function addRole(jobTitle, departmentId, salary) {
+async function addRole(title, departmentId, salary) {
   try {
     const query = `
-      INSERT INTO role (job_title, department_id, salary)
+      INSERT INTO role (title, department_id, salary)
       VALUES (?, ?, ?)
     `;
-    await pool.query(query, [jobTitle, departmentId, salary]);
+    await pool.query(query, [title, departmentId, salary]);
   } catch (error) {
     throw error;
   }

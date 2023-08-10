@@ -1,38 +1,38 @@
 USE employee_db;
 
 -- Insert departments
-INSERT INTO department (name)
+INSERT INTO department (name, department_id)
 VALUES
-  ('Marketing'),
-  ('Engineering'),
-  ('Sales'),
-  ('Customer Service'),
-  ('Management');
+  ('Marketing', 8),
+  ('Engineering', 2),
+  ('Sales', 1),
+  ('Customer Service', 19),
+  ('Management', 20);
 
 -- Insert roles
-INSERT INTO role (job_title, salary, department_id)
+INSERT INTO role (job_title, salary, department_id, role_id)
 VALUES
-  ('Head of Marketing', 80000, 1),
-  ('Software Engineer', 90000, 2),
-  ('Sales Associate', 60000, 3),
-  ('Customer Service Rep', 70000, 4),
-  ('Marketing Associate', 60000, 1),
-  ('General Manager', 95000, 5);
+  ('Head of Marketing', 80000, 8, 12),
+  ('Software Engineer', 90000, 2, 2),
+  ('Sales Associate', 60000, 1, 13),
+  ('Customer Service Rep', 70000, 19, 10),
+  ('Marketing Associate', 60000, 8, 14),
+  ('General Manager', 95000, 20, 11);
 
 -- Insert employees
 INSERT INTO employee (first_name, last_name, department_id, role_id, manager_id, salary)
 VALUES
-  ('John', 'Doe', 2, 2, 5, 90000),
-  ('Jane', 'Smith', 1, 1, 5, 80000),
-  ('Jim', 'Jones', 1, 5, 2, 60000),
-  ('Mike', 'Brown', 3, 3, 5, 60000),
-  ('Sarah', 'Johnson', 4, 4, 5, 70000),
-  ('David', 'Williams', 5, 6, NULL, 95000);
+  ('John', 'Doe', 2, 2, 6, 90000),
+  ('Jane', 'Smith', 8, 12, 6, 80000),
+  ('Jim', 'Jones', 8, 14, 6, 60000),
+  ('Mike', 'Brown', 1, 13, 6, 60000),
+  ('Sarah', 'Johnson', 19, 10, 6, 70000),
+  ('David', 'Williams', 20, 11, NULL, 95000);
 
 -- Update managers
 UPDATE employee
 SET manager_id = 5
-WHERE role_id = 1;
+WHERE role_id = 13;
 
 UPDATE employee
 SET manager_id = 5
@@ -40,16 +40,16 @@ WHERE role_id = 2;
 
 UPDATE employee
 SET manager_id = 5
-WHERE role_id = 3;
+WHERE role_id = 10;
 
 UPDATE employee
 SET manager_id = 5
-WHERE role_id = 4;
+WHERE role_id = 14;
 
 UPDATE employee
 SET manager_id = 2
-WHERE role_id = 5;
+WHERE role_id = 12;
 
 UPDATE employee
 SET manager_id = NULL
-WHERE role_id = 6;
+WHERE role_id = 11;

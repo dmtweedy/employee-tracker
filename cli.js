@@ -122,30 +122,37 @@ async function addDepartment() {
 }
 
 async function addRole() {
-  const roleDetails = await inquirer.prompt([
+  const departmentChoices = await departmentQueries.getAllDepartments();
+
+  const roleData = await inquirer.prompt([
     {
       type: 'input',
-      name: 'jobTitle',
-      message: 'Enter the job title:'
+      name: 'title',
+      message: 'Enter the job title:',
     },
     {
-      type: 'input',
-      name: 'departmentId',
-      message: 'Enter the department ID for the job title:'
-    },
-    {
-      type: 'input',
+      type: 'number',
       name: 'salary',
-      message: 'Enter the salary for the job title:'
-    }
+      message: 'Enter the salary for the job title:',
+    },
+    {
+      type: 'list',
+      name: 'departmentId',
+      message: 'Select the department for the job title:',
+      choices: departmentChoices.map((department) => ({
+        name: department.name,
+        value: department.department_id,
+      })),
+    },
   ]);
 
   try {
-    await roleQueries.addRole(roleDetails.jobTitle, roleDetails.departmentId, roleDetails.salary);
+    await roleQueries.addRole(roleData.title, roleData.salary, roleData.departmentId);
     console.log('Job title added successfully.');
   } catch (error) {
-    console.error('Error adding job title:', error);
+    console.error('Error adding job title:', error.message);
   }
+
   await promptGoBack();
 }
 
@@ -163,13 +170,13 @@ async function addEmployee() {
     },
     {
       type: 'input',
-      name: 'roleId',
-      message: "Enter the employee's job title (role id):"
+      name: 'departmentId',
+      message: "Enter the employee's department (department id):"
     },
     {
       type: 'input',
-      name: 'departmentId',
-      message: "Enter the employee's department (department id):"
+      name: 'roleId',
+      message: "Enter the employee's job title (role id):"
     },
     {
       type: 'input',
@@ -187,6 +194,7 @@ async function addEmployee() {
     await employeeQueries.addEmployee(
       employeeDetails.firstName,
       employeeDetails.lastName,
+      employeeDetails.departmentId,
       employeeDetails.roleId,
       employeeDetails.managerId,
       employeeDetails.salary
@@ -208,7 +216,7 @@ async function updateEmployeeRole() {
     {
       type: 'input',
       name: 'newRoleId',
-      message: "Enter the new job title for the employee:"
+      message: "Enter the new role id for the employee:"
     }
   ]);
 
@@ -225,7 +233,7 @@ async function removeDepartmentMenu() {
   const departments = await departmentQueries.getAllDepartments();
   const departmentChoices = departments.map(department => ({
     name: department.name,
-    value: department.id
+    value: department.department_id
   }));
 
   const { departmentId } = await inquirer.prompt([
@@ -251,8 +259,8 @@ async function removeRoleMenu() {
   try {
     const roles = await roleQueries.getAllRoles();
     const roleChoices = roles.map(role => ({
-      name: role.title,
-      value: role.id
+      name: role.job_title,
+      value: role.role_id
     }));
 
     const { roleId } = await inquirer.prompt([
@@ -264,8 +272,12 @@ async function removeRoleMenu() {
       }
     ]);
 
-    await roleQueries.removeRole(roleId);
-    console.log('Job title removed successfully.');
+    try {
+      await roleQueries.removeRole(roleId);
+      console.log('Job title removed successfully.');
+    } catch (error) {
+      console.error('Error removing job title:', error);
+    }
 
     await promptGoBack();
   } catch (error) {
@@ -276,9 +288,9 @@ async function removeRoleMenu() {
 async function removeEmployeeMenu() {
   try {
     const employees = await employeeQueries.getAllEmployees();
-    
+
     const employeeNames = employees.map(employee => `${employee.first_name} ${employee.last_name}`);
-    
+
     const { employeeName } = await inquirer.prompt([
       {
         type: 'list',
@@ -287,14 +299,13 @@ async function removeEmployeeMenu() {
         choices: employeeNames
       }
     ]);
-    
+
     const [firstName, lastName] = employeeName.split(' ');
-    
-    const removed = await employeeQueries.removeEmployee(firstName, lastName);
-    
-    if (removed) {
+
+    try {
+      await employeeQueries.removeEmployee(firstName, lastName);
       console.log(`Employee ${employeeName} has been removed.`);
-    } else {
+    } catch (error) {
       console.log(`No employee found with the name ${employeeName}.`);
     }
 
@@ -308,7 +319,7 @@ async function removeEmployeeMenu() {
 async function updateEmployeeManager() {
   try {
     const employees = await employeeQueries.getAllEmployees();
-    const employeeNames = employees.map(employee => `${employee.first_name} ${employee.last_name}`);
+    const employeeNames = employees.map(employee => `${employee.name}`);
 
     const { employeeName, newManagerName } = await inquirer.prompt([
       {
@@ -325,9 +336,9 @@ async function updateEmployeeManager() {
       }
     ]);
 
-    const employee = employees.find(employee => `${employee.first_name} ${employee.last_name}` === employeeName);
+    const employee = employees.find(employee => `${employee.name}` === employeeName);
     const newManager = newManagerName !== 'None (No Manager)'
-      ? employees.find(employee => `${employee.first_name} ${employee.last_name}` === newManagerName)
+      ? employees.find(employee => `${employee.name}` === newManagerName)
       : null;
 
     if (!employee) {
@@ -341,6 +352,7 @@ async function updateEmployeeManager() {
   } catch (error) {
     console.error('Error updating employee manager:', error);
   }
+  await promptGoBack();
 }
 
 async function promptGoBack() {

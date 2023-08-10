@@ -21,9 +21,8 @@ async function addDepartment(name) {
 
 async function removeDepartment(departmentId) {
   try {
-    const query = 'DELETE FROM department WHERE id = ?';
-    const [result] = await pool.query(query, [departmentId]);
-    return result;
+    const query = 'DELETE FROM department WHERE department_id = ?';
+    await pool.query(query, [departmentId]);
   } catch (error) {
     throw error;
   }
